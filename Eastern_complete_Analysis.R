@@ -2,7 +2,7 @@
 library(tidyverse)
 library(sf)
 diry <- "Eastern" #paste("m:/My Documents/Snow Geese/A229/Quebec",Y,sep = "")
-
+diry_pro <- "Eastern/protected"
 
 y = 2026
 
@@ -13,11 +13,11 @@ prov_sel <- c("ON","PQ")
 
 
 
-reg_sampled_on <- read.table(paste0(diry,"/SSGS ",y," ON.txt")) %>%
+reg_sampled_on <- read.table(paste0(diry_pro,"/SSGS ",y," ON.txt")) %>%
   rename(permit = 1) %>%
   mutate(id = (y-1)*1000000+permit)
 
-reg_sampled_qc <- read.table(paste0(diry,"/SSGS ",y," PQ.txt")) %>%
+reg_sampled_qc <- read.table(paste0(diry_pro,"/SSGS ",y," PQ.txt")) %>%
   rename(permit = 1) %>%
   mutate(id = (y-1)*1000000+permit)
 
@@ -303,7 +303,7 @@ table1_total_row <- permit_zone %>%
 
 # Responses ---------------------------------------------------------------
 
-q1 <- readxl::read_xls(paste0(diry,"/Ques1_3.xls"),
+q1 <- readxl::read_xls(paste0(diry_pro,"/Ques1_3.xls"),
                        col_types = c("numeric",
                                      "text",
                                      rep("numeric",2))) %>%
@@ -324,7 +324,7 @@ q1 <- readxl::read_xls(paste0(diry,"/Ques1_3.xls"),
 if(y == 2025){
 # One-off fill of missing N responses to Q1 ----------------------------------------------
 #
-# q1_raw <- readxl::read_xls(paste0(diry,"/Ques1_3.xls"),
+# q1_raw <- readxl::read_xls(paste0(diry_pro,"/Ques1_3.xls"),
 #                            col_types = c("numeric",
 #                                          "text",
 #                                          rep("numeric",2))) %>%
@@ -354,7 +354,7 @@ q1 <- q1 %>%
 # Calendar summary and plotting -------------------------------------------
 
 
-bags <- readxl::read_xls(paste0(diry,"/Ques4.xls"),
+bags <- readxl::read_xls(paste0(diry_pro,"/Ques4.xls"),
                          col_types = c(rep("numeric",4))) %>%
   rename_with(.,.fn = str_to_lower) %>%
   mutate(date = ymd(paste(y,month,day,sep = "/")),
@@ -417,7 +417,7 @@ saint_fix <- function(x,prov){
   }
   return(snt)
 }
-technique <- readxl::read_xls(paste0(diry,"/Ques5.xls"),
+technique <- readxl::read_xls(paste0(diry_pro,"/Ques5.xls"),
                               col_types = c("numeric",
                                             "text",
                                             rep("numeric",6)))%>%
@@ -672,7 +672,7 @@ if(any(is.na(tech_join$zone_location_1))){
   stop("At least one location_1 is missing zone assignment")
 }
 
-q6 <- readxl::read_xls(paste0(diry,"/Ques6_8.xls"),
+q6 <- readxl::read_xls(paste0(diry_pro,"/Ques6_8.xls"),
                        col_types = c("numeric",
                                      rep("text",3)))%>%
   rename_with(.,.fn = str_to_lower)%>%
@@ -680,7 +680,7 @@ q6 <- readxl::read_xls(paste0(diry,"/Ques6_8.xls"),
          used_guide = str_to_upper(used_guide),
          hunted_in_fall = str_to_upper(hunted_in_fall))
 
-comments <- readxl::read_xls(paste0(diry,"/Comments.xls"),
+comments <- readxl::read_xls(paste0(diry_pro,"/Comments.xls"),
                              col_types = c("numeric",
                                            "text"))%>%
   rename_with(.,.fn = str_to_lower) %>%
@@ -976,7 +976,7 @@ pops <- table_1 %>%
 harv <- harv %>%
   left_join(pops,
             by = "analysis_stratum")
-saveRDS(harv,"Eastern/harv.rds")
+saveRDS(harv,"Eastern/protected/harv.rds")
 
 
 
@@ -2025,7 +2025,7 @@ saveRDS(table_9_out, paste0(diry,"/tables/Table_9.rds"))
 
 
 
-calendars <- readxl::read_xls(paste0(diry,"/Ques4.xls"),
+calendars <- readxl::read_xls(paste0(diry_pro,"/Ques4.xls"),
                               col_types = c(rep("numeric",4))) %>%
   rename_with(.,.fn = str_to_lower) %>%
   mutate(date = ymd(paste(y,month,day,sep = "/")),
@@ -2133,4 +2133,4 @@ save(list = c("table_1_out",
               "p_hunt_rep_GT_1_district",
               "p_harvest_ontario",
               "seasonal_pattern"),
-     file = paste0(diry,"/all_tables.RData"))
+     file = paste0(diry_pro,"/all_tables.RData"))

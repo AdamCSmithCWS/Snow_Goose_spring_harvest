@@ -25,7 +25,9 @@ library(sf)
 library(knitr)
 
 diry <- "Eastern"
-load(paste0(diry,"/all_tables.RData"))
+diry_pro <- "Eastern/protected"
+
+load(paste0(diry_pro,"/all_tables.RData"))
 
 YY <- 2026
 date_final_permit <- ymd(paste(YY,"/05/29")) # ENTER month and day that permit database was drawn
@@ -51,7 +53,7 @@ date_remind_spring_word <- format(date_remind_spring,"%B %d")
 ```{r}
 
 
-harv <- readRDS(paste0(diry,"/harv.rds"))
+harv <- readRDS(paste0(diry_pro,"/harv.rds"))
 n_rep_activ <- harv %>% 
   ungroup() %>% 
   filter(active == "Y") %>% 

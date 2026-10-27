@@ -17,12 +17,12 @@ prov_sel <- c("AB","SK")
 
 permit_file_dir <- "Permits 2025 (as of Sept 25 2026).xlsx"
 
-abregsk <- read.table(paste0("Western/SSGS ",y," SK.txt")) %>%
+abregsk <- read.table(paste0("Western/protected/SSGS ",y," SK.txt")) %>%
   rename(permit = 1) %>%
   mutate(id = (y-1)*1000000+permit,
          prov = "SK")
 
-abregab <- read.table(paste0("Western/SSGS ",y," AB.txt")) %>%
+abregab <- read.table(paste0("Western/protected/SSGS ",y," AB.txt")) %>%
   rename(permit = 1) %>%
   mutate(id = (y-1)*1000000+permit,
          prov = "AB")
@@ -140,11 +140,11 @@ tab1_samp <- inner_join(pops,sampled_pops,
 westsamp <- full_sampled %>%
   select(id,season,stratum)
 
-write_excel_csv(westsamp,"western/all western sampled permits.csv")
+write_excel_csv(westsamp,"Western/protected/all western sampled permits.csv")
 
 # Responses ---------------------------------------------------------------
 
-q1 <- readxl::read_xlsx("Western/Ques1_3.xlsx",
+q1 <- readxl::read_xlsx("Western/protected/Ques1_3.xlsx",
                        col_types = c("numeric",
                                      "text",
                                      rep("numeric",4))) %>%
@@ -165,7 +165,7 @@ q1 <- readxl::read_xlsx("Western/Ques1_3.xlsx",
 # Calendar summary and plotting -------------------------------------------
 
 
-bags <- readxl::read_xlsx(paste0("western/Ques4.xlsx"),
+bags <- readxl::read_xlsx(paste0("Western/protected/Ques4.xlsx"),
                          col_types = c(rep("numeric",4))) %>%
   rename_with(.,.fn = str_to_lower) %>%
   mutate(date = ymd(paste(y,month,day,sep = "/")),
@@ -212,7 +212,7 @@ numerate <- function(x){
   seq(1,length((x)))
 }
 
-technique <- readxl::read_xlsx("Western/Ques5.xlsx",
+technique <- readxl::read_xlsx("Western/protected/Ques5.xlsx",
                               col_types = c("numeric",
                                             "text",
                                             rep("numeric",6)))%>%
@@ -331,7 +331,7 @@ tech_join <- technique %>%
 
 
 
-q6 <- readxl::read_xlsx("Western/Ques6_8.xlsx",
+q6 <- readxl::read_xlsx("Western/protected/Ques6_8.xlsx",
                        col_types = c("numeric",
                                      rep("text",3)))%>%
   rename_with(.,.fn = str_to_lower)%>%
@@ -339,7 +339,7 @@ q6 <- readxl::read_xlsx("Western/Ques6_8.xlsx",
          used_guide = str_to_upper(used_guide),
          hunted_in_fall = str_to_upper(hunted_in_fall))
 
-comments <- readxl::read_xlsx("Western/Comments.xlsx",
+comments <- readxl::read_xlsx("Western/protected/Comments.xlsx",
                              col_types = c("numeric",
                                            "text"))%>%
   rename_with(.,.fn = str_to_lower) %>%
@@ -1098,7 +1098,7 @@ saveRDS(sum_tech_dist,"Western/output/tech_harvest_west.rds")
 # Calendar summary and plotting -------------------------------------------
 
 
-bags <- readxl::read_xlsx("Western/Ques4.xlsx",
+bags <- readxl::read_xlsx("Western/protected/Ques4.xlsx",
                          col_types = c(rep("numeric",4))) %>%
   rename_with(.,.fn = str_to_lower) %>%
   mutate(date = ymd(paste(y,month,day,sep = "/")),
@@ -1168,7 +1168,7 @@ saveRDS(tabl9, "Western/output/tb9.rds")
 
 
 
-calendars <- readxl::read_xlsx("Western/Ques4.xlsx",
+calendars <- readxl::read_xlsx("Western/protected/Ques4.xlsx",
                               col_types = c(rep("numeric",4))) %>%
   rename_with(.,.fn = str_to_lower) %>%
   mutate(date = ymd(paste(y,month,day,sep = "/")),

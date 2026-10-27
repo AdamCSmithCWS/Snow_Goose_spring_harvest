@@ -11,11 +11,6 @@ library(sf)
 library(tidyverse)
 library(readxl)
 
-wd <- getwd()
-ly_dir <- str_replace(getwd(),pattern = "/[[:digit:]]{4}",
-                      replacement = paste0("/",Yl))
-
-
 # function to calculate the sample size -----------------------------------
 # checks to ensure all regional sample sizes > 100
 # and that total samples == N
@@ -47,7 +42,7 @@ prop <- function(x,n){
 
 # All permits -------------------------------------------------------------
 
-
+# change this file name to match the annual file provided by Michel
 allp <- read_xlsx(path = paste0("data/protected/Permits ",Yl," (as of March 23 ",Yl+1,").xlsx"),
                   col_types = c("text",
                                 "numeric",
@@ -264,15 +259,15 @@ ttt <- maps_sel %>%
 
 
 
-# import saved data on harvest sd -----------------------------------------
+# import saved data on harvest sd from last year -----------------------------------------
 
-alloc <- read_csv(paste0(ly_dir,"/Eastern/",prov_sel," final allocations.csv"),
+alloc <- read_csv(paste0("Eastern/protected/",prov_sel,"_",Y-1," final allocations.csv"),
                   show_col_types = FALSE) %>%
   select(sample_zone,sdharv) %>%
   rename(sd_lasty = sdharv)
 
 
-sd_ly <- readRDS(paste0(ly_dir,"/Eastern/harv.rds")) %>%
+sd_ly <- readRDS(paste0("Eastern/protected/harv",Y-1,".rds")) %>%
   ungroup() %>%
   group_by(analysis_stratum) %>%
   summarise(n = n(),
@@ -303,7 +298,7 @@ allocation <- ttt %>%
 
 
 
-write_csv(allocation,paste0("Eastern/",prov_sel," final allocations.csv"))
+write_csv(allocation,paste0("Eastern/protected/",prov_sel,"_",Y," final allocations.csv"))
 
 set.seed(Y)
 perm_sel <- maps_sel %>%
@@ -327,7 +322,7 @@ tst <- perms_all %>%
   group_by(sample_zone,selected) %>%
   summarise(n_perms = n())
 
-write_csv(tst,paste0("Eastern/",prov_sel,"realised_sampling_alloc.csv"))
+write_csv(tst,paste0("Eastern/protected/",prov_sel,"_",Y,"realised_sampling_alloc.csv"))
 
 tst <- tst %>%
   filter(selected)
@@ -339,8 +334,8 @@ if(nrow(perm_sel) != N){
   stop("There are permits missing from the selection")
 }
 
-saveRDS(perms_all,paste0("Eastern/protected/",prov_sel," permits with zones and selection.rds"))
-write.table(perm_sel,paste0("Eastern/SSGS ",Y," ",prov_sel,".TXT",sep = ""),row.names = F,quote = F,col.names = F)
+saveRDS(perms_all,paste0("Eastern/protected/",prov_sel,"_",Y," permits with zones and selection.rds"))
+write.table(perm_sel,paste0("Eastern/protected/SSGS ",Y," ",prov_sel,".TXT",sep = ""),row.names = F,quote = F,col.names = F)
 
 
 }# end of prov loop
@@ -366,13 +361,13 @@ for(prov_sel in c("SK","AB")){
               n_permits = n())
 
 
-  alloc <- read_csv(paste0(ly_dir,"/Western/",prov_sel," final allocations.csv"),
+  alloc <- read_csv(paste0("Western/",prov_sel,"_",Y,"final allocations.csv"),
                     show_col_types = FALSE) %>%
     select(sample_zone,sdharv) %>%
     rename(sd_lasty = sdharv)
 
 
-  sd_ly <- readRDS(paste0(ly_dir,"/Western/output/harv.rds")) %>%
+  sd_ly <- readRDS(paste0("Western/output/harv.rds")) %>%
     ungroup() %>%
     group_by(stratum) %>%
     summarise(n = n(),
@@ -401,7 +396,7 @@ for(prov_sel in c("SK","AB")){
     mutate(sample_size = prop(sdharv*n_permits,N))
 
 
-  write_csv(allocation,paste0("Western/",prov_sel," final allocations.csv"))
+  write_csv(allocation,paste0("Western/output/",prov_sel,"_",Y," final allocations.csv"))
 
   set.seed(Y)
   perm_sel <- reg_sel %>%
@@ -426,7 +421,7 @@ for(prov_sel in c("SK","AB")){
     group_by(sample_zone,selected) %>%
     summarise(n_perms = n())
 
-  write_csv(tst,paste0("Western/",prov_sel,"realised_sampling_alloc.csv"))
+  write_csv(tst,paste0("Western/output/",prov_sel,"realised_sampling_alloc.csv"))
 
   tst <- tst %>%
     filter(selected)
@@ -434,8 +429,8 @@ for(prov_sel in c("SK","AB")){
     stop("There are permits missing from the selection")
   }
 
-  saveRDS(perms_all,paste0("Western/protected/",prov_sel," permits with zones and selection.rds"))
-  write.table(perm_sel,paste0("Western/SSGS ",Y," ",prov_sel,".TXT",sep = ""),row.names = F,quote = F,col.names = F)
+  saveRDS(perms_all,paste0("Western/protected/",prov_sel,"_",Y," permits with zones and selection.rds"))
+  write.table(perm_sel,paste0("Western/protected/SSGS ",Y," ",prov_sel,".TXT",sep = ""),row.names = F,quote = F,col.names = F)
 
 
 
@@ -455,8 +450,8 @@ reg_sel <- regularpermits_west %>%
 perm_sel <- reg_sel %>%
   select(permit)
 
-saveRDS(reg_sel,paste0("Northern/protected/",prov_sel," permits with zones and selection.rds"))
-write.table(perm_sel,paste0("Northern/SSGS ",Y," ",prov_sel,".TXT",sep = ""),row.names = F,quote = F,col.names = F)
+saveRDS(reg_sel,paste0("Northern/protected/",prov_sel,"_",Y," permits with zones and selection.rds"))
+write.table(perm_sel,paste0("Northern/protected/SSGS ",Y," ",prov_sel,".TXT",sep = ""),row.names = F,quote = F,col.names = F)
 
 
 
