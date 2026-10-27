@@ -2,3 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+*/protected
+*/arch
+*/output
+*/tables
+GIS/cgn_canada_shp_eng*
+GIS/cgn_canada_kml_*
+
