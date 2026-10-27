@@ -1,0 +1,252 @@
+---
+title: "2026 Spring Harvest of Snow Goose in Eastern Provinces"
+author: "Adam C. Smith, Michel Gendron"
+subtitle: "Canadian Wildlife Service, ECCC"
+date: today
+date-format: long
+format:
+  docx:
+    reference-doc: custom-reference-doc.docx
+editor: visual
+execute: 
+  echo: false
+  error: false
+  message: false
+  warning: false
+  eval: true
+prefer-html: true
+fig-dpi: 300
+---
+
+```{r}
+#| eval: true
+library(tidyverse)
+library(sf)
+library(knitr)
+
+diry <- "Eastern"
+load(paste0(diry,"/all_tables.RData"))
+
+YY <- 2026
+date_final_permit <- ymd(paste(YY,"/05/29")) # ENTER month and day that permit database was drawn
+date_final_permit_word <- format(date_final_permit,"%B %d %Y")
+
+
+date_mail_regular <- ymd(paste(YY,"/04/20")) # ENTER month and day that surveys sent to regular season permits
+date_mail_regular_word <- format(date_mail_regular,"%B %d")
+
+date_remind_regular <- ymd(paste(YY,"/07/02")) # ENTER month and day that reminders sent to regular season permits
+date_remind_regular_word <- format(date_remind_regular,"%B %d")
+
+
+date_mail_spring <- ymd(paste(YY,"/05/29")) # ENTER month and day that surveys sent to spring season permits
+date_mail_spring_word <- format(date_mail_spring,"%B %d")
+
+date_remind_spring <- ymd(paste(YY,"/07/10")) # ENTER month and day that reminders sent to spring season permits
+date_remind_spring_word <- format(date_remind_spring,"%B %d")
+
+
+```
+
+```{r}
+
+
+harv <- readRDS(paste0(diry,"/harv.rds"))
+n_rep_activ <- harv %>% 
+  ungroup() %>% 
+  filter(active == "Y") %>% 
+  summarise(n = n()) %>% 
+  unlist()
+n_rep_tech <- harv %>% 
+  ungroup() %>% 
+  filter(used_guide == "Y" | used_recordings == "Y" ) %>% 
+  summarise(n = n()) %>% 
+  unlist()
+n_rep <- harv %>% 
+  ungroup() %>% 
+  summarise(n = n()) %>% 
+  unlist()
+n_rep_location <- harv %>% 
+  ungroup() %>% 
+  filter(!is.na(zone_location_1))%>% 
+  summarise(n = n()) %>% 
+  unlist()
+n_rep_locationmt1 <- harv %>% 
+  ungroup() %>% 
+  filter(!is.na(zone_location_2))%>% 
+  summarise(n = n()) %>% 
+  unlist()
+```
+
+## Introduction
+
+This report provides estimates of harvest and hunter activity for the spring Snow Goose hunt in Eastern Canada, in `r YY`. The estimates here apply to the population of hunters who: 1) purchased a migratory game bird hunting permit in the spring (hereafter spring permits); and 2) Ontario and Quebec residents who purchased a permit during the regular `r paste0(YY-1,"-",YY)` hunting season, in a location where the spring hunt takes place (in Quebec, hunting districts D, E, F, G, H, or I, in Ontario, Wildlife Management Unit 65 (WMU 65)), or in the Ontario WMUs that surround WMU 65 (hereafter regular season permits). Regular season permits were defined as permits purchased before January 31; spring permits were considered as such, if purchased after January 31 in Quebec and March 10 in Ontario.
+
+Prior to 2015, the Quebec and Ontario surveys were analysed separately. Since 2015, although permits were sampled separately, the responses are analysed together, as a single survey for two reasons: 1) the same population of Snow Goose is being hunted in each province, and 2) there are hunters from each province taking part in the hunt (and reporting hunting activity) in the other province.
+
+The combined survey region had 9 sampling strata: 8 geographic strata for regular season permits---6 in Quebec, districts D, E, F, G, H and I; and 2 in Ontario WMU 65 and the surround WMUs---, and 1 additional stratum for all spring permits. Sampling of the regular season permit holders followed the same procedures used in previous years. The questionnaire was sent to a random sample of regular permits on `r date_mail_regular_word`. All spring permits received by `r date_mail_spring_word` were selected for the spring stratum. Finally, the total population sizes of hunters in all strata were adjusted upwards using the MGBHP database on `r date_final_permit_word`, which included permits received after the time of sampling.
+
+The returned questionnaires were entered and non-respondents were sent a reminder letter and a new copy of the questionnaire on `r date_remind_regular_word` and on `r date_remind_spring_word` for spring permit holders.
+
+All analyses are design-based summaries of mean and standard error (SE) values of per-hunter harvest and activity. Those means and SE-values are then scaled to estimate total harvest and activity based on the total population of permits (combined regular season purchased permits and spring purchased permits).
+
+{{< pagebreak >}}
+
+## Response Summary
+
+The overall response rate in `r YY` was `r 100*resp_rate`% (Table 1), which is similar to recent years, but lower than much of the previous decade. The response rate for the spring permit holders was essentially the same as the overall response rate (Table 1).
+
+Hunting activity and harvest were calculated for permit holders based on their sampling strata (Tables 2, 3, 5, and 9), and based on their location of hunt (Table 4, 6, 7, and 8).
+
+The number of hunters by each technique (Table 6) was estimated for each geographic stratum, by multiplying the proportion of hunters who used each technique and hunted in that stratum (based on their first reported hunt location), by the estimated number of active hunters in each stratum from Table 4. Some hunters failed to report their activity broken down by hunting technique, so the proportion of hunters who engaged in a technique was calculated as the number reporting the technique divided by the number reporting at least one technique by stratum. The number of days (Table 7) and estimated harvest (Table 8) by technique were derived in the same manner (e.g., by multiplying the estimated number of active hunters by the average number of days using each technique for the hunters that reported technique).
+
+The calendar data were used to estimate the distribution of daily bags by stratum. The average daily bag was then calculated and a factor derived which expanded the average to the estimated hunting days by stratum in Table 2. The distribution of daily bags was then multiplied by this fraction to estimate the total number of hunters who had a given daily bag.
+
+The calendar data were used to estimate the distribution of harvest throughout the hunting season. The harvest reported on each day was divided by the total harvest reported in the calendar for the season (Figure 1).
+
+## Results
+
+The estimated number of hunters, number of successful hunters, hunting days and harvest based on sampling strata, are shown in Table 2.
+
+A substantial number of hunters in strata H and I reported hunting in a region (i.e. geographic stratum) outside of the region where their permit was purchased, but relatively few of the reporting hunters from WMU 65 hunted outside of their region (Table 3). The reporting of hunting locations is summarized for the geographic strata using all permits, including spring permits, which were grouped according to the region where they were purchased (Table 3, all rows except the last row). The information was also reported for the spring permits only (Table 3, final row). As in previous years, a few Quebec residents reported Ontario as their primary hunting location, and a few Ontario residents reported Quebec as their primary hunting locations, but most hunting activity occurred within the province of residence. As in previous years, almost all hunters report hunting in only one district, overall approximately `r p_hunt_rep_GT_1_district`% reported hunting activity in more than one district (Table 3).
+
+The distribution of estimated hunting activity by hunting district is shown in Table 4. The estimates in Table 4 are based on the hunters who chose to respond to questions on location and hunting technique, and the totals differ from totals in Table 2. Only `r 100*p_harvest_ontario`% of the harvest occurred in Ontario this year.
+
+The estimated proportion of hunters using each technique and the estimated total number of hunters are shown in Table 6. The estimated number of hunting days and harvest for each technique are shown in Tables 7 and 8 respectively. The totals for number of days and harvest here will not necessarily correspond with Tables 2 or 4 because not all hunters indicate technique and the reported harvests for each technique do not always agree with harvests reported on the calendars or in response to question 3.
+
+The estimated distribution of daily bag is shown in Table 9. Overall, the distribution of bags for spring permit holders seems similar to that for regular season permit holders.
+
+The estimated proportion of harvest and activity for each day of the season is shown in Figure 1 (Note in previous reports, this was shown in two separate figures).
+
+The estimated numbers of active hunters, successful hunters, hunting days and estimated harvest for the regular season permit population are compared across years in table 10.
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 1. Number of questionnaires sent and returned"
+#| tbl-cap-location: margin
+
+kable(table_1_out)
+```
+
+######### Note: In Table 1, Spring permits purchased outside of the regions included in the regular season sampling are excluded from the column *Total Number of Permits in Hunting District*, but included in the total number of permits in the column *Number of Spring Permits in Sample Stratum*.
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 2. Estimated Hunting Activity (by sampling stratum)"
+#| tbl-cap-location: margin
+
+kable(table_2_out)
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 3. Reporting of Hunting Location"
+#| tbl-cap-location: margin
+
+kable(table_3_out)
+```
+
+######### Note: In Table 3, Results in the row *Spring* are reported for spring permits in isolation, but spring permits (based on their location of purchase) are also included in the results reported in the other rows.
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 4. Estimated Hunting Activity by Hunting District (reported location of hunt)"
+#| tbl-cap-location: margin
+
+kable(table_4_out)
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 5. Estimated Use of Recordings, Guide, and Participation"
+#| tbl-cap-location: margin
+
+kable(table_5_out)
+```
+
+######### Note Table 5: Spring permits that indicated hunting in the fall likely represent hunters who have purchased a second MGBHP, presumably after losing their original (regular season) permit at some point between the regular season and the spring hunt.
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 6. Reporting of Hunting Technique"
+
+kable(table_6_out)
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 7. Reporting of Days by Hunting Technique"
+#| tbl-cap-location: margin
+
+kable(table_7_out)
+```
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 8. Reporting of Harvest by Hunting Technique"
+
+kable(table_8_out)
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 9. Distribution of Daily Bag by sample strata"
+#| tbl-cap-location: margin
+
+kable(table_9_out)
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 10. Historic Comparison of estimated harvest by regular season permit purchasers"
+
+kable(table_10_out)
+```
+
+######### Note Table 10: Estimates for years since 2013 exclude hunting activity and harvest by spring permit purchasers, to facilitate comparison with estimates from previous years.
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| fig-cap: "Figure 1. Distribution of Hunting Activity and Harvest by date. Note: Vertical grey lines indicate Saturdays"
+
+
+saturdays <- seasonal_pattern %>% 
+  filter(wkday == 7) %>% 
+  select(date) %>% 
+  unlist() %>% 
+  unname()
+
+season_plot <- ggplot(data = seasonal_pattern,
+                      aes(x = date,
+                          y = proportion,
+                          colour = metric,
+                          group = metric))+
+  geom_vline(xintercept = saturdays,
+             colour = grey(0.8))+
+  geom_line(linewidth = 1) +
+  xlab("")+
+  ylab("Proportion of total harvest or activity")+
+  theme_classic() +
+  scale_y_continuous(expand = expansion(0,0))+
+  scale_colour_viridis_d(begin = 0.2,
+                         end = 0.8,
+                         name = "")+
+  theme(legend.position = "bottom")
+  
+
+print(season_plot)
+```

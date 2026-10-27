@@ -1,0 +1,413 @@
+---
+title: "2026 Spring Harvest of Snow and Ross's Goose in Alberta and Saskatchewan"
+author: "Adam C. Smith, Michel Gendron"
+subtitle: "Canadian Wildlife Service, ECCC"
+date: today
+date-format: long
+format:
+  docx:
+    reference-doc: custom-reference-doc.docx
+editor: visual
+execute: 
+  echo: false
+  error: false
+  message: false
+  warning: false
+  eval: true
+prefer-html: true
+fig-dpi: 300
+---
+
+```{r}
+
+library(tidyverse)
+library(sf)
+library(knitr)
+
+diry <- "Western"
+
+
+YY <- 2026
+date_final_permit <- ymd(paste(YY,"/05/29")) # ENTER month and day that permit database was drawn
+date_final_permit_word <- format(date_final_permit,"%B %d %Y")
+
+
+date_mail_regular <- ymd(paste(YY,"/04/20")) # ENTER month and day that surveys sent to regular season permits
+date_mail_regular_word <- format(date_mail_regular,"%B %d")
+
+date_remind_regular <- ymd(paste(YY,"/07/02")) # ENTER month and day that reminders sent to regular season permits
+date_remind_regular_word <- format(date_remind_regular,"%B %d")
+
+
+date_mail_spring <- ymd(paste(YY,"/05/29")) # ENTER month and day that surveys sent to spring season permits
+date_mail_spring_word <- format(date_mail_spring,"%B %d")
+
+date_remind_spring <- ymd(paste(YY,"/07/10")) # ENTER month and day that reminders sent to spring season permits
+date_remind_spring_word <- format(date_remind_spring,"%B %d")
+
+
+
+```
+
+## Introduction
+
+This report describes the results of a survey of the spring goose hunt in Saskatchewan and Alberta in `r YY`. Participation in the spring hunt was open to individuals possessing a migratory game bird hunting permit for the `r paste0(YY-1,"-",YY)` hunting season. Surveys in previous years have indicated that permits purchased immediately before and during the spring Snow Goose hunt have different participation and harvest rates from permits purchased during the regular season (the spring Snow and Ross's Goose hunt is the only hunting opportunity after December). Regular season permits were defined as permits purchased before January 1; spring permits were considered as such if purchased after January 1. A stratified random sample of regular season permits was taken from each of 2 sampling-strata within each province (total of 4 regular season, sampling-strata): 1) MGBHP purchasers in Saskatchewan who were residents of Saskatchewan, 2) MGBHP purchasers in Saskatchewan who were residents of the United States, 3) MGBHP purchasers in Alberta who were residents of Alberta, 4) MGBHP purchasers in Alberta who were residents of the United States.
+
+The analysis was conducted within the following 6 analytical-strata that differed from the sampling strata: 1) regular-season permit holders who purchased permits in Saskatchewan and are residents of Saskatchewan; 2) spring permit holders who purchased permits in Saskatchewan and are residents of Canada; 3) regular-season permit holders who purchased permits in Alberta and are residents of Alberta; 4) spring permit holders who purchased permits in Alberta and are residents of Canada; and 5) regular-season permit holders who purchased permits in Alberta or Saskatchewan and are residents of the United States; and 6) spring permit holders who purchased permits in Alberta or Saskatchewan and are residents of United States. The population sizes of hunters in each territory and for the total estimates were adjusted upwards using the MGBHP database on `r date_final_permit_word`, which included permits received after the time of sampling.
+
+The regular season permit holders selected in the sample were mailed a questionnaire on `r date_mail_regular_word`. The returned questionnaires were entered and non-respondents were sent a reminder letter and a new copy of the questionnaire on `r date_remind_regular_word`. All spring permits purchased in the Alberta and Saskatchewan and received by `r date_mail_spring_word` were selected and a reminder questionnaire was sent to non-respondents on `r date_remind_spring_word`.
+
+{{< pagebreak >}}
+
+## Results
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 1. Number of questionnaires sent and returned"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+
+stratum_names <- data.frame(stratum = c("AB","SK","US",
+                                        "ZA","ZS","ZU"),
+                            Residence = rep(c("AB",
+                                              "SK",
+                                              "US"),2))
+
+tab1 <- readRDS(paste0(diry,"/output/table1.rds")) %>% 
+  ungroup() %>% 
+  left_join(stratum_names,by = "stratum") %>% 
+  mutate(Season = str_to_sentence(season),
+         stratum = ifelse(stratum == "Total",stratum,"")) %>% 
+  select(stratum,Season,Residence,
+         population,sample,responses,response_rate)
+
+
+resp_rate <- tab1 %>% 
+  filter(is.na(Season)) %>% 
+  select(response_rate) %>% 
+  unlist()
+
+tab1 <- tab1 %>% 
+  mutate(Residence = ifelse(is.na(Residence),"",Residence),
+         Season = ifelse(is.na(Season),"",Season)) %>% 
+  mutate(Season = ifelse(stratum == "Total",paste(stratum,Season),
+                         Season)) %>% 
+  select(-stratum) %>% 
+  relocate(Season,Residence)
+names(tab1) <- c("Season",
+                 "Residence",
+                 "Total Number of Permits in Sample Stratum",
+                 "Number of Permits Sampled",
+                 "Number of Permits Returned",
+                 "Response Rate (%)")
+kable(tab1) 
+```
+
+The overall response rate was `r paste(resp_rate,"%")` (Table 1), which is lower than rates before 2012 (\~45%), but similar to the response rate in recent years.
+
+```{r}
+harv_sum_table <- readRDS(paste0(diry,"/output/simple_harvest_west_raw.rds"))
+
+n_activ <- signif(sum(round(harv_sum_table$`Number of Active Hunters_est`)),2)
+tot_harv <- sum(round(harv_sum_table$`Harvest of All Geese_est`)) 
+prop_sn <- 100*round(sum(round(harv_sum_table$`Harvest of Snow Geese_est`))/tot_harv,2) 
+prop_ro <- 100*round(sum(round(harv_sum_table$`Harvest of Ross's Geese_est`))/tot_harv,2) 
+tot_harv_rnd <- scales::comma(signif(tot_harv,3))
+
+
+```
+
+The majority of the estimates in this report relate to the hunting activity and harvest of both species (i.e., combined Snow Goose and Ross's Goose). However, estimates of the number of successful hunters and harvest by analytical-strata are also calculated separately for each species (Table 2). There were approximately `r n_activ` active hunters in the spring hunt. The combined harvest was estimated at approximately `r tot_harv_rnd` geese: Ross's Geese made up `r prop_ro`% of that combined harvest and Snow Geese the remaining `r prop_sn`%.
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 2. Estimated Hunting Activity (by analytical stratum and species)"
+#| tbl-cap-location: top
+
+tab2 <- readRDS(paste0(diry,"/output/simple_harvest_west.rds")) %>% 
+  ungroup() %>% 
+  left_join(stratum_names,by = "stratum") %>% 
+  mutate(Season = str_to_sentence(season),
+         stratum = ifelse(stratum == "Total",stratum,""),
+         Residence = ifelse(is.na(Residence),"",Residence),
+         Season = ifelse(is.na(Season),"",Season)) %>% 
+  select(-season) %>%
+  select(-contains("Using"),
+         -contains("Fall")) %>% 
+  mutate(Season = ifelse(stratum == "Total",paste(stratum,Season),
+                         Season)) %>% 
+  select(-stratum) %>% 
+  relocate(Season,Residence)
+
+
+
+kable(tab2) 
+```
+
+```{r}
+tab3 <- readRDS(paste0(diry,"/output/district_harvest_west.rds"))
+
+p_ab <- round(tab3[which(tab3$prov == "AB"),"tot_harv"]/sum(tab3[,"tot_harv"]),2)*100
+p_sk <- 100-p_ab
+```
+
+The harvest was higher in Saskatchewan this year, where `r p_sk`% of the harvest occurred (Table 3).
+
+```{r}
+
+prov_names <- data.frame(prov = c("AB","SK"),
+                         Province = c("AB","SK"))
+tab3 <- tab3 %>% 
+  ungroup() %>% 
+  left_join(prov_names,by = "prov") %>% 
+  select(-c(prov,tot_harv,n_active,days)) %>%
+  select(-contains("Using"),
+         -contains("Fall")) %>% 
+  relocate(Province)
+
+hunting_locations_summary <- readRDS(paste0(diry,"/output/reported_hunting_loc_summary.rds"))
+
+tb3_link <- data.frame(Province = c("AB",
+                                    "SK"),
+                       p_travel = NA,
+                       p_both = NA)
+
+for(rr in c("AB","SK")){
+  tmp <- hunting_locations_summary %>% filter(Province == rr)
+tb3_link[which(tb3_link$Province == rr),"p_travel"] <- 
+  round(sum(tmp[which(tmp$travel == 1),"n_ids"])/sum(tmp$n_ids),2)
+
+tb3_link[which(tb3_link$Province == rr),"p_both"] <- 
+  round(sum(tmp[which(tmp$travel == 1 & tmp$n_prov > 1),"n_ids"])/sum(tmp$n_ids),2)
+
+  }
+
+tab3 <- tab3 %>% 
+  left_join(tb3_link, by = "Province")
+
+names(tab3)[c(10,11)] <- c("Proportion of resident hunters travel alternate province","Proportion of resident hunters that hunt in both provinces")
+
+```
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 3. Estimated Hunting Activity by province"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+kable(tab3) 
+```
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 4. Estimated Use of Recordings, Guide, and Participation in Fall Hunt. Note: spring permits indicating they also hunted in the fall likely represent hunters who have purchased a second MGBHP, presumably after losing their original (regular season) permit at some point between the regular season and the spring hunt"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+tab4 <- readRDS(paste0(diry,"/output/simple_harvest_west.rds")) %>% 
+  ungroup() %>% 
+  left_join(stratum_names,by = "stratum") %>% 
+  mutate(Season = str_to_sentence(season),
+         stratum = ifelse(stratum == "Total",stratum,""),
+         Residence = ifelse(is.na(Residence),"",Residence),
+         Season = ifelse(is.na(Season),"",Season)) %>% 
+  select(-season) %>%
+  select(stratum,Season,Residence,
+         contains("Using"),
+         contains("Fall")) %>% 
+  mutate(Season = ifelse(stratum == "Total",paste(stratum,Season),
+                         Season)) %>% 
+  select(-stratum) %>% 
+  relocate(Season,Residence)
+
+
+
+kable(tab4)
+```
+
+{{< pagebreak >}}
+
+Some hunters failed to report their activity broken down by hunting technique. To estimate the number of active hunters, the proportion of hunters who engaged in a technique was calculated as the number reporting the technique divided by the number reporting at least one technique by strata. This was then multiplied by the estimated number of active hunters for the stratum (from Table 2) to estimate the number of hunters using the technique.
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 5. Estimated Number of Hunters by Techniques and Province"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+
+sum_tech_dist <- readRDS(paste0(diry,"/output/tech_harvest_west.rds"))
+
+tab5 <- sum_tech_dist %>% 
+  ungroup() %>% 
+  left_join(prov_names,by = "prov") %>% 
+  select(-prov) %>%
+  select(Province,
+         contains("active")) %>% 
+  relocate(Province,
+           est_active_blind_decoy,
+           p_tot_active_blind_decoy,
+           est_active_pass,
+           p_tot_active_pass,
+           est_active_stalking,
+           p_tot_active_stalking)
+
+
+names(tab5)[c(2:7)] <- c("Number of hunters using blind and decoys",
+                         "Proportion of hunters using blind and decoys",
+                         "Number of hunters using pass shooting",
+                         "Proportion of hunters using pass shooting",
+                         "Number of hunters using stalking",
+                         "Proportion of hunters using stalking")
+kable(tab5) 
+
+  
+
+```
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 6. Estimated Hunting Activity by Technique and Province"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+
+tab6 <- sum_tech_dist %>% 
+  ungroup() %>% 
+  left_join(prov_names,by = "prov") %>% 
+  select(-prov) %>%
+  select(Province,
+         contains("days")) %>% 
+  relocate(Province,
+           est_days_blind_decoy,
+           p_tot_days_blind_decoy,
+           est_days_pass,
+           p_tot_days_pass,
+           est_days_stalking,
+           p_tot_days_stalking)
+
+
+names(tab6)[c(2:7)] <- c("Number of days using blind and decoys",
+                         "Proportion of days using blind and decoys",
+                         "Number of days using pass shooting",
+                         "Proportion of days using pass shooting",
+                         "Number of days using stalking",
+                         "Proportion of days using stalking")
+kable(tab6) 
+
+  
+```
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 7. Estimated Harvest by Technique and Province"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+
+tab7 <- sum_tech_dist %>% 
+  ungroup() %>% 
+  left_join(prov_names,by = "prov") %>% 
+  select(-prov) %>%
+  select(Province,
+         contains("killed")) %>% 
+  relocate(Province,
+           est_killed_blind_decoy,
+           p_tot_killed_blind_decoy,
+           est_killed_pass,
+           p_tot_killed_pass,
+           est_killed_stalking,
+           p_tot_killed_stalking)
+
+
+names(tab7)[c(2:7)] <- c("Harvest using blind and decoys",
+                         "Proportion of Harvest using blind and decoys",
+                         "Harvest using pass shooting",
+                         "Proportion of Harvest using pass shooting",
+                         "Harvest using stalking",
+                         "Proportion of Harvest using stalking")
+kable(tab7) 
+
+```
+
+{{< pagebreak >}}
+
+The calendar data were used to estimate the distribution of daily bags by stratum. The average daily bag was calculated and a factor derived which expanded the average to the estimated hunting days by stratum. The distribution of daily bags was then multiplied by this fraction to estimate the total number of hunters who reported each daily bag. There were some unusually large numbers of responses reporting daily bags of 20 and 10 this year.
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 8. Distribution of Daily Bag by sample strata"
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+tab9 <- readRDS(paste0(diry,"/output/tb9.rds")) %>% 
+  select(-total) 
+s_harv <- sum(tab9$harvest)
+  tab9 <- tab9 %>% 
+  mutate(p_harvest = round(harvest/s_harv,3))
+
+
+names(tab9) <- c("Daily bag",
+                 "AB regular season permits",
+                 "SK regular season permits",
+                 "US regular season permits",
+                 "AB spring permits",
+                 "SK spring permits",
+                 "US spring permits",
+                 "Harvest by bag size",
+                 "Proportion of total harvest by bag size")
+kable(tab9) 
+
+```
+
+{{< pagebreak >}}
+
+The calendar data were also used to estimate the distribution of harvest throughout the hunting season. The harvest reported on each day was divided by the total harvest reported in the calendar for the season (Figure 1).
+
+```{r}
+#| eval: true
+#| fig-cap: "Figure 1. Distribution of Hunting Activity and Harvest by date. Note: Vertical grey lines indicate Saturdays"
+
+
+seasonal_pattern <- readRDS(paste0(diry,"/output/seasonal_patterns.rds"))
+
+saturdays <- seasonal_pattern %>% 
+  filter(wkday == 7) %>% 
+  select(date) %>% 
+  unlist() %>% 
+  unname()
+
+season_plot <- ggplot(data = seasonal_pattern,
+                      aes(x = date,
+                          y = proportion,
+                          colour = metric,
+                          group = metric))+
+  geom_vline(xintercept = saturdays,
+             colour = grey(0.8))+
+  geom_line(linewidth = 1) +
+  xlab("")+
+  ylab("Proportion of total harvest or activity")+
+  theme_classic() +
+  scale_y_continuous(expand = expansion(0,0))+
+  scale_colour_viridis_d(begin = 0.2,
+                         end = 0.8,
+                         name = "")+
+  theme(legend.position = "bottom")
+  
+
+print(season_plot)
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| eval: true
+#| tbl-cap: "Table 9. Annual harvest estimates by residency and permit type. Note: Survey methodologies have changed(expanded) over the years which explains the blank cells in years prior to 2014."
+#| tbl-colwidths: [60,40]
+#| tbl-cap-location: top
+
+tab10 <- readRDS(paste0(diry,"/output/table10.rds"))
+
+kable(tab10)
+```
